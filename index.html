@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -21,14 +21,125 @@
     <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyDkn_MaioZRxcbP3kZlE79o__b2ZqOTJ7Q",
-    authDomain: "realtime-database-2c082.firebaseapp.com",
-    projectId: "realtime-database-2c082",
-    storageBucket: "realtime-database-2c082.firebasestorage.app",
-    messagingSenderId: "260143165520",
-    appId: "1:260143165520:web:cfd890e229a589bee92155",
-    measurementId: "G-WTPSQ7VQ7V"
+ <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mạng Xã Hội Thu Nhỏ</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ebee; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .post-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #1877f2; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #166fe5; }
+        .post { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .post-author { font-weight: bold; color: #1c1e21; margin-bottom: 5px; display: block; }
+        .post-content { color: #4b4f56; line-height: 1.4; }
+        .post-time { font-size: 11px; color: #90949c; margin-top: 10px; display: block; }
+    </style>
+</head>
+<body>
+ <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDkn_MaioZRxcbP3kZlE79o__b2ZqOTJ7Q",
+  authDomain: "realtime-database-2c082.firebaseapp.com",
+  databaseURL: "https://realtime-database-2c082-default-rtdb.firebaseio.com/",
+  projectId: "realtime-database-2c082",
+  storageBucket: "realtime-database-2c082.firebasestorage.app",
+  messagingSenderId: "260143165520",
+  appId: "1:260143165520:web:cfd890e229a589bee92155"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+const feed = document.getElementById('feed');
+const btnPost = document.getElementById('btnPost');
+
+btnPost.onclick = function() {
+    const user = document.getElementById('username').value || "Người dùng ẩn danh";
+    const content = document.getElementById('postInput').value;
+
+    if(!content) return alert("Hãy nhập nội dung!");
+
+    push(ref(database, 'posts'), {
+        user: user,
+        content: content,
+        time: new Date().toLocaleString()
+    });
+
+    document.getElementById('postInput').value = "";
+};
+
+onValue(ref(database, 'posts'), (snapshot) => {
+    feed.innerHTML = "";
+    snapshot.forEach((childSnapshot) => {
+        const post = childSnapshot.val();
+        renderPost(post.user, post.content, post.time);
+    });
+});
+
+function renderPost(user, content, time) {
+    const html = `
+        <div class="post">
+            <span class="post-author">@${user}</span>
+            <p class="post-content">${content}</p>
+            <span class="post-time">${time}</span>
+        </div>
+    `;
+    feed.insertAdjacentHTML('afterbegin', html);
+}
+</script>
+<div class="container">
+    <div class="post-box">
+        <h3>Chia sẻ điều gì đó...</h3>
+        <input type="text" id="username" placeholder="Tên của bạn">
+        <textarea id="postInput" placeholder="Nội dung bài viết..."></textarea>
+        <button id="btnPost">Đăng bài</button>
+    </div>
+
+    <div id="feed">
+        </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+
+    
+    const feed = document.getElementById('feed');
+    const btnPost = document.getElementById('btnPost');
+
+    btnPost.onclick = function() {
+        const user = document.getElementById('username').value || "Người dùng ẩn danh";
+        const content = document.getElementById('postInput').value;
+
+        if(!content) return alert("Hãy nhập nội dung!");
+
+        renderPost(user, content, "Vừa xong");
+        document.getElementById('postInput').value = "";
+    };
+
+    function renderPost(user, content, time) {
+        const html = `
+            <div class="post">
+                <span class="post-author">@${user}</span>
+                <p class="post-content">${content}</p>
+                <span class="post-time">${time}</span>
+            </div>
+        `;
+        feed.insertAdjacentHTML('afterbegin', html);
+    }
+
+
+</body>
+</html>
+
   };
 
   const app = initializeApp(firebaseConfig);
