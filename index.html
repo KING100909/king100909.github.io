@@ -3,119 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced CRUD System</title>
+    <title>Phòng Chat Trực Tuyến</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
     <style>
-        :root {
-            --primary: #4f46e5;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --text: #1e293b;
-        }
+        :root { --primary: #4f46e5; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        
+        .container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; border-radius: 15px; shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        h2 { background: var(--primary); color: white; margin: 0; padding: 20px; text-align: center; font-size: 1.2rem; }
+        
+        /* Khu vực hiển thị tin nhắn */
+        #noteList { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #ffffff; }
+        
+        .message-box { background: #f8fafc; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; animation: fadeIn 0.3s ease; }
+        .user-name { display: block; font-size: 0.75rem; font-weight: bold; color: var(--primary); margin-bottom: 4px; text-transform: uppercase; }
+        .message-text { color: #334155; line-height: 1.4; word-wrap: break-word; }
+        .btn-delete { position: absolute; top: 5px; right: 10px; color: #cbd5e1; cursor: pointer; border: none; background: none; font-size: 14px; }
+        .btn-delete:hover { color: #ef4444; }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 2rem; }
-        .container { width: 100%; max-width: 600px; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        
-        h2 { margin-top: 0; color: var(--primary); }
-        
-        .input-group { display: flex; gap: 10px; margin-bottom: 1.5rem; }
-        input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; outline: none; transition: border 0.3s; }
+        /* Khu vực nhập liệu */
+        .input-area { padding: 20px; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; background: white; }
+        .row { display: flex; gap: 10px; }
+        input { padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); }
-        
-        button { cursor: pointer; border: none; border-radius: 6px; font-weight: 600; transition: opacity 0.2s; }
-        .btn-add { background: var(--primary); color: white; padding: 0 20px; }
-        
-        .note-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px; border-bottom: 1px solid #f1f5f9; animation: fadeIn 0.3s ease;
-        }
-        .note-text { flex: 1; margin-right: 10px; cursor: pointer; padding: 5px; }
-        .note-text:hover { background: #f1f5f9; border-radius: 4px; }
-        
-        .actions { display: flex; gap: 5px; }
-        .btn-delete { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; }
-        
+        #userName { width: 100px; font-weight: bold; }
+        #noteInput { flex: 1; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-send:hover { opacity: 0.9; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Đạt trứng cút</h2>
-    <div class="input-group">
-        <input type="text" id="noteInput" placeholder="Nhập gì đó để gửi đến Đạt trứng cút...">
-        <button class="btn-add" onclick="App.addNote()">Thêm</button>
+    <h2>Hệ Thống Nhắn Tin 💬</h2>
+    
+    <div id="noteList">
+        </div>
+
+    <div class="input-area">
+        <div class="row">
+            <input type="text" id="userName" placeholder="Tên...">
+            <input type="text" id="noteInput" placeholder="Nhập tin nhắn...">
+        </div>
+        <button class="btn-send" onclick="App.addNote()">GỬI TIN NHẮN</button>
     </div>
-    <div id="noteList"></div>
 </div>
 
 <script>
+    // 1. CẤU HÌNH FIREBASE (Dán thông tin của bạn vào đây)
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "your-app.firebaseapp.com",
+        databaseURL: "https://your-app-default-rtdb.firebaseio.com",
+        projectId: "your-app",
+        storageBucket: "your-app.appspot.com",
+        messagingSenderId: "...",
+        appId: "..."
+    };
 
-const App = (() => {
-    const state = new Proxy({
-        notes: JSON.parse(localStorage.getItem('my_notes')) || []
-    }, {
-        set(target, property, value) {
-            target[property] = value;
-            localStorage.setItem('my_notes', JSON.stringify(value)); 
-            render(); 
-            return true;
-        }
-    });
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const dbRef = db.ref('chat_messages');
 
-    function render() {
-        const listContainer = document.getElementById('noteList');
-        listContainer.innerHTML = state.notes.length === 0 
-            ? '<p style="color:#94a3b8">Gửi gì cho Đạt nào ...</p>' 
-            : state.notes.map((note, index) => `
-                <div class="note-item">
-                    <span class="note-text" onclick="App.editNote(${index})">${sanitize(note)}</span>
-                    <div class="actions">
-                        <button class="btn-delete" onclick="App.deleteNote(${index})">Xóa</button>
-                    </div>
+    // 2. LOGIC ỨNG DỤNG
+    const App = (() => {
+        // Lấy tên đã lưu từ lần trước (nếu có)
+        window.onload = () => {
+            const savedName = localStorage.getItem('chat_user_name');
+            if (savedName) document.getElementById('userName').value = savedName;
+        };
+
+        // Lắng nghe tin nhắn mới từ Firebase
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const messages = data ? Object.entries(data).map(([id, obj]) => ({ id, ...obj })) : [];
+            render(messages);
+        });
+
+        function render(messages) {
+            const listContainer = document.getElementById('noteList');
+            listContainer.innerHTML = messages.map(msg => `
+                <div class="message-box">
+                    <button class="btn-delete" onclick="App.deleteNote('${msg.id}')">×</button>
+                    <span class="user-name">${sanitize(msg.user)}</span>
+                    <div class="message-text">${sanitize(msg.text)}</div>
                 </div>
             `).join('');
-    }
-
-    function sanitize(str) {
-        const temp = document.createElement('div');
-        temp.textContent = str;
-        return temp.innerHTML;
-    }
-
-    return {
-        addNote() {
-            const input = document.getElementById('noteInput');
-            const value = input.value.trim();
-            if (!value) return alert("Vui lòng không để trống!");
             
-            state.notes = [...state.notes, value]; // Kích hoạt Proxy để lưu & render
-            input.value = '';
-        },
-
-        deleteNote(index) {
-            if (confirm("Bạn có chắc chắn muốn xóa không?")) {
-                const newNotes = [...state.notes];
-                newNotes.splice(index, 1);
-                state.notes = newNotes;
-            }
-        },
-
-        editNote(index) {
-            const newValue = prompt("Chỉnh sửa nội dung:", state.notes[index]);
-            if (newValue !== null && newValue.trim() !== "") {
-                const newNotes = [...state.notes];
-                newNotes[index] = newValue.trim();
-                state.notes = newNotes;
-            }
-        },
-
-        init() {
-            render();
+            // Tự động cuộn xuống tin nhắn mới nhất
+            listContainer.scrollTop = listContainer.scrollHeight;
         }
-    };
-})();
 
-App.init();
+        function sanitize(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        return {
+            addNote() {
+                const nameInp = document.getElementById('userName');
+                const textInp = document.getElementById('noteInput');
+                
+                const user = nameInp.value.trim() || "Ẩn danh";
+                const text = textInp.value.trim();
+
+                if (!text) return;
+
+                // Lưu tên vào máy để lần sau không phải nhập lại
+                localStorage.setItem('chat_user_name', user);
+
+                // Gửi lên mây
+                dbRef.push({ user, text, time: Date.now() });
+
+                textInp.value = ''; // Xóa ô nhập, giữ lại tên
+                textInp.focus();
+            },
+
+            deleteNote(id) {
+                if (confirm("Xóa tin nhắn này cho tất cả mọi người?")) {
+                    db.ref('chat_messages/' + id).remove();
+                }
+            }
+        };
+    })();
+
+    // Hỗ trợ nhấn Enter để gửi
+    document.getElementById('noteInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') App.addNote();
+    });
 </script>
 
 </body>
