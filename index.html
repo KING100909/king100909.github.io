@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng Chat Cá Nhân</title>
+    <title>Phòng Chat Ẩn Danh</title>
     <style>
         :root { --primary: #4f46e5; --bg: #f1f5f9; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
@@ -46,7 +46,6 @@
 
 <script>
     const App = (() => {
-        // TRẠNG THÁI: Tự động lấy dữ liệu từ LocalStorage khi mở trang
         const state = new Proxy({
             messages: JSON.parse(localStorage.getItem('my_private_chat')) || []
         }, {
@@ -76,7 +75,6 @@
             return temp.innerHTML;
         }
 
-        // Tự load tên cũ và tin nhắn cũ khi vừa mở web
         window.onload = () => {
             const savedName = localStorage.getItem('chat_user_name');
             if (savedName) document.getElementById('userName').value = savedName;
@@ -92,10 +90,8 @@
 
                 if (!text) return;
 
-                // Lưu tên vào máy để lần sau không phải nhập lại
                 localStorage.setItem('chat_user_name', user);
 
-                // Cập nhật mảng tin nhắn (Proxy sẽ tự lưu vào LocalStorage và Render)
                 state.messages = [...state.messages, { user, text }];
 
                 textInp.value = '';
@@ -111,7 +107,6 @@
         };
     })();
 
-    // Nhấn Enter để gửi
     document.getElementById('noteInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') App.sendMessage();
     });
