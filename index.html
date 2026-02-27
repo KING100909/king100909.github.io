@@ -65,7 +65,7 @@ const App = (() => {
     function render() {
         const listContainer = document.getElementById('noteList');
         listContainer.innerHTML = state.notes.length === 0 
-            ? '<p style="color:#94a3b8">Chưa có nội dung nào...</p>' 
+            ? '<p style="color:#94a3b8">Gửi gì cho Đạt nào ...</p>' 
             : state.notes.map((note, index) => `
                 <div class="note-item">
                     <span class="note-text" onclick="App.editNote(${index})">${sanitize(note)}</span>
