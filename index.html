@@ -273,8 +273,6 @@
     let database = JSON.parse(localStorage.getItem('off_db')) || [];
     let quickEmoji = localStorage.getItem('off_emoji') || '💙';
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
     function render() {
         const screenReg = document.getElementById('screenRegister');
         const screenChat = document.getElementById('screenChat');
@@ -332,14 +330,10 @@
     }
 
     function handleKeyDown(e) {
-        if (e.key === "Enter") {
-            if (isMobile) {
-                return;
-            } else {
-                if (!e.shiftKey) {
-                    e.preventDefault();
-                    sendText();
-                }
+        if (e.key === "Enter" && !e.shiftKey) {
+            if (window.innerWidth > 768) {
+                e.preventDefault();
+                sendText();
             }
         }
     }
