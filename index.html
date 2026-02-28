@@ -3,207 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messenger Offline Pro - Fixed</title>
+    <title>Messenger Offline Pro - Super Stable</title>
     <style>
-        :root { --primary: #0084ff; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; height: 100vh; }
+        :root { --primary-color: #0084ff; --bg-color: #f0f2f5; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; justify-content: center; height: 100vh; }
+        
+        /* Ẩn hiện các màn hình */
         .hidden { display: none !important; }
 
-        /* Màn hình đăng ký */
-        .auth-box { align-self: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
-        .auth-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-start { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* MÀN HÌNH ĐĂNG KÝ */
+        #man_hinh_dang_ky { align-self: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        #man_hinh_dang_ky input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-bat-dau { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* Giao diện chính */
-        .chat-container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; height: 100vh; }
+        /* GIAO DIỆN CHAT CHÍNH */
+        .chat-container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; height: 100vh; position: relative; }
         header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         
-        #chatDisplay { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        #khung_hien_thi_chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-color: #ffffff; }
 
         /* Bong bóng chat */
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; }
-        .msg-wrapper.mine { align-self: flex-end; align-items: flex-end; }
-        .msg-wrapper.others { align-self: flex-start; align-items: flex-start; }
-        .sender-name { font-size: 11px; color: #65676b; margin-bottom: 2px; }
-        .msg-bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; position: relative; }
-        .mine .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .others .msg-bubble { background: #e4e6eb; color: black; border-bottom-left-radius: 4px; }
+        .tin-nhan-wrapper { display: flex; flex-direction: column; max-width: 75%; margin-bottom: 5px; }
+        .tin-nhan-cua-toi { align-self: flex-end; align-items: flex-end; }
+        .tin-nhan-nguoi-khac { align-self: flex-start; align-items: flex-start; }
+        
+        .ten-nguoi-gui { font-size: 11px; color: #65676b; margin-bottom: 2px; }
+        .noi-dung-bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; position: relative; }
+        
+        .tin-nhan-cua-toi .noi-dung-bubble { background: var(--primary-color); color: white; border-bottom-right-radius: 4px; }
+        .tin-nhan-nguoi-khac .noi-dung-bubble { background: #e4e6eb; color: black; border-bottom-left-radius: 4px; }
 
-        .msg-img { max-width: 200px; border-radius: 10px; margin-top: 5px; }
-        audio { height: 35px; width: 210px; margin-top: 5px; }
+        .anh-da-gui { max-width: 200px; border-radius: 10px; margin-top: 5px; display: block; }
+        audio { height: 35px; width: 200px; margin-top: 5px; }
 
-        /* Nút xóa */
-        .btn-del { cursor: pointer; color: #ccc; font-size: 12px; margin-top: 2px; border: none; background: none; }
-        .btn-del:hover { color: #ff4d4d; }
+        .nut-xoa-tin { cursor: pointer; color: #ccc; font-size: 11px; border: none; background: none; margin-top: 2px; }
+        .nut-xoa-tin:hover { color: red; }
 
-        /* Thanh nhập liệu */
-        .input-area { padding: 15px; border-top: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
-        #msgInp { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #eee; background: #f0f2f5; outline: none; }
-        .btn-icon { font-size: 22px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-icon:hover { transform: scale(1.1); }
-        .recording { color: red; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        /* KHU VỰC NHẬP TIN NHẮN */
+        .vung-nhap-lieu { padding: 15px; border-top: 1px solid #eee; display: flex; align-items: center; gap: 10px; background: white; }
+        #o_nhap_tin_nhan { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #eee; background: #f0f2f5; outline: none; font-size: 15px; }
+        
+        .nut-icon { font-size: 24px; border: none; background: none; cursor: pointer; display: flex; align-items: center; transition: 0.2s; padding: 0; }
+        .nut-icon:hover { transform: scale(1.2); }
+        .dang-ghi-am { color: red; animation: nhap_nhay 1s infinite; }
+        
+        @keyframes nhap_nhay { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <div id="authScreen" class="auth-box hidden">
-        <h2 style="color: var(--primary)">Chào mừng!</h2>
-        <input type="text" id="regName" placeholder="Nhập tên của bạn...">
-        <button class="btn-start" onclick="App.register()">Vào Chat</button>
+    <div id="man_hinh_dang_ky">
+        <h2 style="color: var(--primary-color)">Tạo Tài Khoản</h2>
+        <input type="text" id="ten_nguoi_dung_moi" placeholder="Nhập tên của bạn...">
+        <button class="btn-bat-dau" onclick="XU_LY_DANG_KY()">Bắt đầu Chat</button>
     </div>
 
-    <div id="chatScreen" class="chat-container hidden">
+    <div id="man_hinh_chat" class="chat-container hidden">
         <header>
             <div>
-                <strong id="headerName">...</strong>
+                <strong id="ten_hien_thi_tren_dau">Đang tải...</strong>
                 <div style="font-size: 10px; color: #31a24c">● Đang hoạt động</div>
             </div>
-            <button onclick="App.logout()" style="border:none; background:none; color:#999; cursor:pointer;">Đăng xuất</button>
+            <button onclick="XU_LY_DANG_XUAT()" style="border:none; background:none; color:#999; cursor:pointer;">Đăng xuất</button>
         </header>
 
-        <div id="chatDisplay"></div>
+        <div id="khung_hien_thi_chat">
+            </div>
 
-        <div class="input-area">
-            <input type="file" id="fileInp" hidden accept="image/*" onchange="App.sendImage(this)">
-            <button class="btn-icon" onclick="document.getElementById('fileInp').click()">🖼️</button>
-            <button id="recordBtn" class="btn-icon" onclick="App.toggleRecord()">🎤</button>
+        <div class="vung-nhap-lieu">
+            <input type="file" id="chon_file_anh" hidden accept="image/*" onchange="XU_LY_GUI_ANH(this)">
+            <button class="nut-icon" onclick="document.getElementById('chon_file_anh').click()">🖼️</button>
             
-            <input type="text" id="msgInp" placeholder="Aa" onkeypress="if(event.key === 'Enter') App.sendMessage()">
+            <button id="nut_ghi_am" class="nut-icon" onclick="XU_LY_GHI_AM()">🎤</button>
             
-            <button class="btn-icon" onclick="App.sendMessage()" title="Gửi">💙</button>
+            <input type="text" id="o_nhap_tin_nhan" placeholder="Aa" onkeypress="if(event.key === 'Enter') HAM_GUI_TIN_NHAN_CHINH()">
+            
+            <button class="nut-icon" id="nut_gui_tin_nhan" onclick="HAM_GUI_TIN_NHAN_CHINH()">
+                💙
+            </button>
         </div>
     </div>
 
 <script>
-    const App = (() => {
-        // Khởi tạo dữ liệu
-        const state = new Proxy({
-            currentUser: JSON.parse(localStorage.getItem('chat_acc_v3')) || null,
-            messages: JSON.parse(localStorage.getItem('chat_db_v3')) || []
-        }, {
-            set(target, prop, value) {
-                target[prop] = value;
-                localStorage.setItem('chat_acc_v3', JSON.stringify(target.currentUser));
-                localStorage.setItem('chat_db_v3', JSON.stringify(target.messages));
-                render();
-                return true;
-            }
-        });
+    /* --- PHẦN 1: QUẢN LÝ DỮ LIỆU (DATABASE OFFLINE) --- */
+    let TAI_KHOAN_HIEN_TAI = JSON.parse(localStorage.getItem('user_acc')) || null;
+    let DANH_SACH_TIN_NHAN = JSON.parse(localStorage.getItem('chat_data')) || [];
 
-        let mediaRec;
-        let chunks = [];
+    /* --- PHẦN 2: CÁC HÀM XỬ LÝ CHÍNH --- */
 
-        function render() {
-            const auth = document.getElementById('authScreen');
-            const chat = document.getElementById('chatScreen');
-            
-            if (!state.currentUser) {
-                auth.classList.remove('hidden');
-                chat.classList.add('hidden');
-                return;
-            }
+    // Hàm hiển thị tin nhắn ra màn hình
+    function VE_LAI_GIAO_DIEN() {
+        const authScreen = document.getElementById('man_hinh_dang_ky');
+        const chatScreen = document.getElementById('man_hinh_chat');
+        const listChat = document.getElementById('khung_hien_thi_chat');
 
-            auth.classList.add('hidden');
-            chat.classList.remove('hidden');
-            document.getElementById('headerName').innerText = state.currentUser.name;
-
-            const display = document.getElementById('chatDisplay');
-            display.innerHTML = state.messages.map((m, index) => `
-                <div class="msg-wrapper ${m.uid === state.currentUser.uid ? 'mine' : 'others'}">
-                    <span class="sender-name">${m.userName}</span>
-                    <div class="msg-bubble">
-                        ${m.type === 'text' ? m.content : 
-                          m.type === 'image' ? `<img src="${m.content}" class="msg-img">` :
-                          `<audio src="${m.content}" controls></audio>`}
-                    </div>
-                    <button class="btn-del" onclick="App.deleteMessage(${index})">Xóa</button>
-                </div>
-            `).join('');
-            display.scrollTop = display.scrollHeight;
+        // Kiểm tra xem đã đăng nhập chưa
+        if (!TAI_KHOAN_HIEN_TAI) {
+            authScreen.classList.remove('hidden');
+            chatScreen.classList.add('hidden');
+            return;
         }
 
-        return {
-            register() {
-                const name = document.getElementById('regName').value.trim();
-                if (!name) return alert("Vui lòng nhập tên!");
-                state.currentUser = { uid: Date.now().toString(), name: name };
-            },
-            logout() {
-                if(confirm("Bạn có muốn đăng xuất không?")) state.currentUser = null;
-            },
-            // Đảm bảo hàm này trùng tên với lệnh gọi ở nút Trái tim
-            sendMessage() {
-                const inp = document.getElementById('msgInp');
-                const val = inp.value.trim();
-                if (!val) return;
+        // Nếu đã đăng nhập, hiện màn hình chat
+        authScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
+        document.getElementById('ten_hien_thi_tren_dau').innerText = TAI_KHOAN_HIEN_TAI.name;
 
-                state.messages = [...state.messages, {
-                    uid: state.currentUser.uid,
-                    userName: state.currentUser.name,
-                    content: val,
-                    type: 'text'
-                }];
-                inp.value = '';
-                inp.focus();
-            },
-            sendImage(inp) {
-                const file = inp.files[0];
-                if (!file) return;
-                const r = new FileReader();
-                r.onload = e => {
-                    state.messages = [...state.messages, {
-                        uid: state.currentUser.uid,
-                        userName: state.currentUser.name,
-                        content: e.target.result,
-                        type: 'image'
-                    }];
-                    inp.value = '';
-                };
-                r.readAsDataURL(file);
-            },
-            async toggleRecord() {
-                const btn = document.getElementById('recordBtn');
-                if (!mediaRec) {
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        mediaRec = new MediaRecorder(stream);
-                        chunks = [];
-                        mediaRec.ondataavailable = e => chunks.push(e.data);
-                        mediaRec.onstop = () => {
-                            const blob = new Blob(chunks, { type: 'audio/webm' });
-                            const r = new FileReader();
-                            r.onload = e => {
-                                state.messages = [...state.messages, {
-                                    uid: state.currentUser.uid,
-                                    userName: state.currentUser.name,
-                                    content: e.target.result,
-                                    type: 'voice'
-                                }];
-                            };
-                            r.readAsDataURL(blob);
-                        };
-                        mediaRec.start();
-                        btn.classList.add('recording');
-                    } catch (err) { alert("Không thể truy cập Microphone!"); }
-                } else {
-                    mediaRec.stop();
-                    mediaRec = null;
-                    btn.classList.remove('recording');
-                }
-            },
-            deleteMessage(index) {
-                if(confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) {
-                    const newMsgs = [...state.messages];
-                    newMsgs.splice(index, 1);
-                    state.messages = newMsgs;
-                }
-            },
-            init: render
+        // Vẽ từng tin nhắn
+        listChat.innerHTML = DANH_SACH_TIN_NHAN.map((msg, index) => {
+            const laToi = msg.uid === TAI_KHOAN_HIEN_TAI.uid;
+            return `
+                <div class="tin-nhan-wrapper ${laToi ? 'tin-nhan-cua-toi' : 'tin-nhan-nguoi-khac'}">
+                    <span class="ten-nguoi-gui">${msg.userName}</span>
+                    <div class="noi-dung-bubble">
+                        ${msg.type === 'text' ? msg.content : 
+                          msg.type === 'image' ? `<img src="${msg.content}" class="anh-da-gui">` :
+                          `<audio src="${msg.content}" controls></audio>`}
+                    </div>
+                    <button class="nut-xoa-tin" onclick="XU_LY_XOA_TIN(${index})">Xóa</button>
+                </div>
+            `;
+        }).join('');
+
+        // Cuộn xuống cuối
+        listChat.scrollTop = listChat.scrollHeight;
+    }
+
+    // HÀM GỬI TIN NHẮN (Khi bấm nút Trái tim hoặc Enter)
+    function HAM_GUI_TIN_NHAN_CHINH() {
+        const input = document.getElementById('o_nhap_tin_nhan');
+        const text = input.value.trim();
+
+        if (text === "") return; // Không làm gì nếu để trống
+
+        // Lưu tin nhắn vào mảng
+        const tinMoi = {
+            uid: TAI_KHOAN_HIEN_TAI.uid,
+            userName: TAI_KHOAN_HIEN_TAI.name,
+            content: text,
+            type: 'text'
         };
-    })();
 
-    App.init();
+        DANH_SACH_TIN_NHAN.push(tinMoi);
+        
+        // Lưu vào bộ nhớ máy tính
+        localStorage.setItem('chat_data', JSON.stringify(DANH_SACH_TIN_NHAN));
+
+        // Xóa ô nhập và vẽ lại
+        input.value = "";
+        VE_LAI_GIAO_DIEN();
+        input.focus();
+    }
+
+    // Xử lý đăng ký
+    function XU_LY_DANG_KY() {
+        const inputName = document.getElementById('ten_nguoi_dung_moi');
+        const name = inputName.value.trim();
+        if (!name) return alert("Vui lòng nhập tên!");
+
+        TAI_KHOAN_HIEN_TAI = { uid: "ID_" + Date.now(), name: name };
+        localStorage.setItem('user_acc', JSON.stringify(TAI_KHOAN_HIEN_TAI));
+        VE_LAI_GIAO_DIEN();
+    }
+
+    // Xử lý đăng xuất
+    function XU_LY_DANG_XUAT() {
+        if (confirm("Bạn có muốn thoát và đổi tên khác?")) {
+            TAI_KHOAN_HIEN_TAI = null;
+            localStorage.removeItem('user_acc');
+            VE_LAI_GIAO_DIEN();
+        }
+    }
+
+    // Xử lý xóa tin (Có hỏi lại)
+    function XU_LY_XOA_TIN(index) {
+        const xacNhan = confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?");
+        if (xacNhan) {
+            DANH_SACH_TIN_NHAN.splice(index, 1);
+            localStorage.setItem('chat_data', JSON.stringify(DANH_SACH_TIN_NHAN));
+            VE_LAI_GIAO_DIEN();
+        }
+    }
+
+    // Xử lý gửi ảnh
+    function XU_LY_GUI_ANH(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            DANH_SACH_TIN_NHAN.push({
+                uid: TAI_KHOAN_HIEN_TAI.uid,
+                userName: TAI_KHOAN_HIEN_TAI.name,
+                content: e.target.result,
+                type: 'image'
+            });
+            localStorage.setItem('chat_data', JSON.stringify(DANH_SACH_TIN_NHAN));
+            VE_LAI_GIAO_DIEN();
+            input.value = ""; // Reset
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Xử lý ghi âm (Voice)
+    let bô_ghi_am;
+    let du_lieu_am_thanh = [];
+    function XU_LY_GHI_AM() {
+        const nut = document.getElementById('nut_ghi_am');
+        if (!bô_ghi_am) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                bô_ghi_am = new MediaRecorder(stream);
+                du_lieu_am_thanh = [];
+                bô_ghi_am.ondataavailable = e => du_lieu_am_thanh.push(e.data);
+                bô_ghi_am.onstop = () => {
+                    const blob = new Blob(du_lieu_am_thanh, { type: 'audio/webm' });
+                    const r = new FileReader();
+                    r.onload = e => {
+                        DANH_SACH_TIN_NHAN.push({
+                            uid: TAI_KHOAN_HIEN_TAI.uid,
+                            userName: TAI_KHOAN_HIEN_TAI.name,
+                            content: e.target.result,
+                            type: 'voice'
+                        });
+                        localStorage.setItem('chat_data', JSON.stringify(DANH_SACH_TIN_NHAN));
+                        VE_LAI_GIAO_DIEN();
+                    };
+                    r.readAsDataURL(blob);
+                };
+                bô_ghi_am.start();
+                nut.classList.add('dang-ghi-am');
+                nut.innerText = "🛑";
+            }).catch(() => alert("Lỗi: Không tìm thấy Microphone!"));
+        } else {
+            bô_ghi_am.stop();
+            bô_ghi_am = null;
+            nut.classList.remove('dang-ghi-am');
+            nut.innerText = "🎤";
+        }
+    }
+
+    /* --- KHỞI CHẠY LẦN ĐẦU --- */
+    VE_LAI_GIAO_DIEN();
 </script>
 </body>
 </html>
