@@ -7,7 +7,348 @@
     <style>
         :root {
             --primary: #0084ff;
+            --bg: #f0f2f5;<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Messenger Pro Max V2 - Easter Egg</title>
+    <style>
+        :root {
+            --primary: #0084ff;
             --bg: #f0f2f5;
+            --msg-me: #0084ff;
+            --msg-them: rgba(255, 255, 255, 0.9);
+        }
+
+        html, body {
+            height: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: var(--bg);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .hidden { display: none !important; }
+
+        .chat-app {
+            display: flex; flex-direction: column;
+            height: 100dvh; max-width: 600px;
+            margin: 0 auto; background: white;
+            position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        header {
+            padding: 12px 15px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; z-index: 10;
+        }
+
+        #chatDisplay {
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; gap: 15px;
+            background-color: white;
+            background-size: cover; 
+            background-position: center;
+            background-attachment: fixed;
+            transition: background 0.3s ease;
+            box-shadow: inset 0 0 0 2000px rgba(0,0,0,0.05); 
+        }
+
+        .msg-row { display: flex; flex-direction: column; width: 100%; position: relative; }
+        .me { align-items: flex-end; }
+        .them { align-items: flex-start; }
+
+        .bubble-container { position: relative; max-width: 75%; display: flex; flex-direction: column; }
+        .me .bubble-container { align-items: flex-end; }
+
+        .bubble {
+            padding: 10px 15px; border-radius: 18px;
+            font-size: 15px; line-height: 1.4;
+            word-wrap: break-word; white-space: pre-wrap;
+            text-align: left; cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+        }
+        .bubble:active { transform: scale(0.98); }
+        .me .bubble { background: linear-gradient(135deg, #0084ff 0%, #00c6ff 100%); color: white; border-bottom-right-radius: 4px; }
+        .them .bubble { background: rgba(255, 255, 255, 0.85); color: black; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.3); }
+
+        .sender-name {
+            font-size: 11px; color: #fff; margin-bottom: 2px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9); font-weight: bold;
+        }
+
+        /* HIỆU ỨNG CHỮ CHẠY LUNG TUNG */
+        .guessed-text {
+            position: fixed; z-index: 9999;
+            font-weight: bold; font-size: 20px;
+            pointer-events: none; white-space: nowrap;
+            animation: moveAround 3s linear forwards;
+        }
+
+        @keyframes moveAround {
+            0% { transform: translate(0,0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            25% { transform: translate(30vw, 20vh) rotate(90deg); }
+            50% { transform: translate(-20vw, 50vh) rotate(180deg); }
+            75% { transform: translate(10vw, -10vh) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); opacity: 0; }
+        }
+
+        /* CÁC PHẦN CÒN LẠI GIỮ NGUYÊN */
+        .reaction-bar { display: none; position: absolute; top: -50px; background: white; border-radius: 25px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; gap: 8px; align-items: center; }
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: white; z-index: 2000; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); padding: 20px; display: flex; flex-direction: column; transform: translateY(100%); transition: 0.3s; }
+        .bottom-sheet.open { transform: translateY(0); }
+        .theme-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; overflow-y: auto; height: 50vh; }
+        .theme-item { height: 140px; border-radius: 12px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding: 10px; background-size: cover; background-position: center; border: 1px solid #eee; }
+        .bottom-bar { padding: 8px 12px; border-top: 1px solid #eee; display: flex; align-items: flex-end; gap: 8px; background: white; }
+        #msgTextarea { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #eee; background: #f0f2f5; outline: none; font-size: 15px; max-height: 100px; resize: none; }
+        .action-btn { border: none; background: none; cursor: pointer; padding: 6px; }
+        .emoji-badge { position: absolute; bottom: -12px; right: 10px; background: white; border-radius: 12px; padding: 2px 6px; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        .settings-modal { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 1500; padding: 20px; display: flex; flex-direction: column; }
+      /* Hiệu ứng chữ chạy ngang màn hình trong 10s */
+.guessed-text {
+    position: fixed;
+    z-index: 9999;
+    font-weight: bold;
+    font-size: 24px;
+    color: #ff0055;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    /* Chạy từ phải sang trái */
+    animation: marquee-horizontal 10s linear forwards;
+}
+
+@keyframes marquee-horizontal {
+    0% { 
+        right: -100%; /* Bắt đầu ngoài màn hình bên phải */
+        opacity: 0;
+    }
+    5% { 
+        opacity: 1; 
+    }
+    95% {
+        opacity: 1;
+    }
+    100% { 
+        right: 110%; /* Kết thúc ngoài màn hình bên trái */
+        opacity: 0;
+    }
+}
+/* --- VỊ TRÍ 1: TRƯỚC THẺ ĐÓNG STYLE --- */
+.guessed-text {
+    position: fixed;
+    left: 0;
+    z-index: 9999;
+    font-weight: bold;
+    font-size: 26px;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    animation: marquee-x 10s linear forwards;
+}
+
+@keyframes marquee-x {
+    0% { transform: translateX(100vw); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+}
+    </style>
+</head>
+<body>
+
+    <div id="screenRegister" class="hidden" style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <h2 style="color: var(--primary);">Messenger</h2>
+        <input type="text" id="usernameInp" placeholder="Tên của bạn..." style="padding:15px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; width:250px;">
+        <button onclick="register()" style="padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; width:250px; font-weight:bold;">Vào Chat</button>
+    </div>
+
+    <div id="screenChat" class="chat-app hidden">
+        <header>
+            <div><strong id="headerUsername">...</strong></div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="toggleThemePanel()" class="action-btn" style="font-size: 22px;">🎨</button>
+                <button onclick="toggleSettings()" class="action-btn" style="font-size: 22px;">⚙️</button>
+                <button onclick="logout()" style="border:none; background:none; color:red; font-weight:bold;">Thoát</button>
+            </div>
+        </header>
+
+        <div id="settingsPanel" class="settings-modal hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Chọn Emoji nhanh</h3>
+                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 35px;">&times;</button>
+            </div>
+            <div class="emoji-grid-settings" id="emojiSelection"></div>
+        </div>
+
+        <div id="chatDisplay" onclick="closeAllPopups()"></div>
+
+        <div id="themePanel" class="bottom-sheet">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <strong>Chủ đề chi tiết</strong>
+                <button onclick="toggleThemePanel()" style="border:none; background:none; font-size:28px;">&times;</button>
+            </div>
+            <div class="theme-scroll" id="themeList"></div>
+        </div>
+
+        <div class="bottom-bar">
+            <button class="action-btn" onclick="document.getElementById('mediaInp').click()">📷</button>
+            <input type="file" id="mediaInp" hidden onchange="sendMedia(this)">
+            <button id="micBtn" class="action-btn" onclick="toggleVoice()">🎤</button>
+            <textarea id="msgTextarea" rows="1" placeholder="Aa" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+            <button id="quickEmojiBtn" class="action-btn" style="font-size: 24px;" onclick="sendQuickEmoji()">💙</button>
+            <button class="action-btn" onclick="sendText()">🚀</button>
+        </div>
+    </div>
+
+<script>
+    let account = JSON.parse(localStorage.getItem('off_acc')) || null;
+    let database = JSON.parse(localStorage.getItem('off_db')) || [];
+    let quickEmoji = localStorage.getItem('off_emoji') || '💙';
+    let currentTheme = localStorage.getItem('off_theme') || 'white';
+    let mediaRec; let chunks = [];
+
+    const quickReacts = ['❤️','😆','😮','😢','😠','👍'];
+    const settingsEmojis = ['💙','👍','❤️','😂','😮','😢','😠','🔥','💯','🎉','✨','🚀'];
+    const chatThemes = [
+        { name: 'Mặc định', bg: 'white' },
+        { name: 'Sợi Carbon', bg: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png"), #222' },
+        { name: 'Thành phố đêm', bg: 'url("https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600&q=80")' }
+    ];
+
+    function render() {
+        if (!account) {
+            document.getElementById('screenRegister').classList.remove('hidden');
+            document.getElementById('screenChat').classList.add('hidden');
+            return;
+        }
+        document.getElementById('screenRegister').classList.add('hidden');
+        document.getElementById('screenChat').classList.remove('hidden');
+        document.getElementById('headerUsername').innerText = account.name;
+        document.getElementById('quickEmojiBtn').innerText = quickEmoji;
+        applyTheme();
+
+        const display = document.getElementById('chatDisplay');
+        display.innerHTML = database.map((m, index) => {
+            const isMe = m.uid === account.uid;
+            let content = m.content;
+            if (m.type === 'image') content = `<img src="${m.content}" class="media-content">`;
+            else if (m.type === 'voice') content = `<audio src="${m.content}" controls></audio>`;
+
+            return `
+                <div class="msg-row ${isMe ? 'me' : 'them'}">
+                    <span class="sender-name">${m.uName}</span>
+                    <div class="bubble-container">
+                        <div class="bubble" onclick="showReactions(event, ${index})">${content}</div>
+                        ${m.reaction ? `<div class="emoji-badge">${m.reaction}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        display.scrollTop = display.scrollHeight;
+    }
+
+    // --- LOGIC HIỆU ỨNG ĐOÁN ĐÚNG ---
+    function triggerSuccessEffect() {
+        const colors = ['#0084ff', '#ff0055', '#28a745', '#ffc107', '#6f42c1'];
+        for(let i = 0; i < 8; i++) {
+            const el = document.createElement('div');
+            el.className = 'guessed-text';
+            el.innerText = "Chúc mừng bạn đã đoán đúng!";
+            el.style.left = Math.random() * 70 + 'vw';
+            el.style.top = Math.random() * 70 + 'vh';
+            el.style.color = colors[Math.floor(Math.random() * colors.length)];
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+    }
+
+    function sendText() {
+    const inp = document.getElementById('msgTextarea');
+    const val = inp.value.trim();
+    if(val) {
+        
+        // --- CHÈN THÊM 3 DÒNG NÀY ---
+        if (val === "Nguyễn Thị " + account.name) {
+            triggerSuccessEffect();
+        }
+        // ----------------------------
+
+        saveMsg(val, 'text'); 
+        inp.value = ''; 
+        inp.style.height = 'auto'; 
+    }
+}
+    // --- CÁC HÀM CÒN LẠI GIỮ NGUYÊN ---
+    function toggleThemePanel() {
+        const panel = document.getElementById('themePanel');
+        panel.classList.toggle('open');
+        const list = document.getElementById('themeList');
+        list.innerHTML = chatThemes.map(t => `<div class="theme-item" style="background: ${t.bg}; background-size: cover;" onclick="setTheme('${t.bg}')"><span class="theme-name">${t.name}</span></div>`).join('');
+    }
+
+    function setTheme(bg) { currentTheme = bg; localStorage.setItem('off_theme', bg); applyTheme(); document.getElementById('themePanel').classList.remove('open'); render(); }
+    function applyTheme() { const d = document.getElementById('chatDisplay'); d.style.background = currentTheme; d.style.backgroundSize = 'cover'; }
+    function register() { const n = document.getElementById('usernameInp').value; if(n){ account = { uid: "U"+Date.now(), name: n }; localStorage.setItem('off_acc', JSON.stringify(account)); render(); } }
+    function logout() { localStorage.removeItem('off_acc'); location.reload(); }
+    function saveMsg(content, type) { database.push({ uid: account.uid, uName: account.name, content, type, reaction: null }); saveAndRender(); }
+    function saveAndRender() { localStorage.setItem('off_db', JSON.stringify(database)); render(); }
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+    function handleKeyDown(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendText(); } }
+    function sendQuickEmoji() { saveMsg(quickEmoji, 'emoji'); }
+    function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); const g = document.getElementById('emojiSelection'); g.innerHTML = settingsEmojis.map(e => `<div class="emoji-option" onclick="setQuickEmoji('${e}')">${e}</div>`).join(''); }
+    function setQuickEmoji(e) { quickEmoji = e; localStorage.setItem('off_emoji', e); toggleSettings(); render(); }
+    function closeAllPopups() { document.getElementById('themePanel').classList.remove('open'); }
+    // Hàm tạo hiệu ứng chữ chạy - Chèn thêm vào script
+// Hàm tạo hiệu ứng chữ chạy ngang - Thời gian 10s
+function triggerSuccessEffect() {
+    const colors = ['#0084ff', '#ff0055', '#28a745', '#ffc107', '#6f42c1'];
+    const message = "🎉 Chúc mừng bạn đã đoán đúng! 🎉";
+    
+    // Tạo 3 dòng chạy ở các độ cao khác nhau cho đẹp
+    for(let i = 0; i < 3; i++) {
+        const el = document.createElement('div');
+        el.className = 'guessed-text';
+        el.innerText = message;
+        
+        // Chia độ cao màn hình để các dòng không đè lên nhau (ví dụ: 20%, 50%, 80%)
+        el.style.top = (20 + (i * 30)) + 'vh'; 
+        el.style.color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Làm các dòng chạy lệch nhau một chút cho sinh động
+        el.style.animationDelay = (i * 0.5) + 's';
+        
+        document.body.appendChild(el);
+        
+        // Xóa phần tử sau 11 giây (để chắc chắn chạy xong 10s animation)
+        setTimeout(() => el.remove(), 11000);
+    }
+}
+    // Hàm tạo hiệu ứng chữ chạy - Chèn thêm vào script
+function triggerSuccessEffect() {
+    const colors = ['#0084ff', '#ff0055', '#28a745', '#ffc107', '#6f42c1'];
+    for(let i = 0; i < 6; i++) {
+        const el = document.createElement('div');
+        el.className = 'guessed-text';
+        el.innerText = "🎉 Chúc mừng bạn đã đoán đúng! 🎉";
+        
+        // Vị trí xuất hiện ngẫu nhiên trên màn hình
+        el.style.left = (Math.random() * 60 + 10) + 'vw';
+        el.style.top = (Math.random() * 60 + 10) + 'vh';
+        el.style.color = colors[Math.floor(Math.random() * colors.length)];
+        
+        document.body.appendChild(el);
+        
+        // Tự động xóa sau khi chạy xong animation
+        setTimeout(() => el.remove(), 3500);
+    }
+}
+    render();
+</script>
+</body>
+</html>
             --msg-me: #0084ff;
             --msg-them: #e4e6eb;
         }
