@@ -3,55 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng Chat Ẩn Danh</title>
+    <title>Phòng Chat Đa Phương Tiện Pro</title>
     <style>
-        :root { --primary: #4f46e5; --bg: #f1f5f9; }
+        :root { --primary: #4f46e5; --bg: #f1f5f9; --record: #ef4444; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         h2 { background: var(--primary); color: white; margin: 0; padding: 20px; text-align: center; font-size: 1.2rem; }
         
-        /* Khu vực hiển thị tin nhắn */
         #chatDisplay { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #ffffff; }
-        .message-box { background: #f8fafc; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; animation: fadeIn 0.2s ease; }
-        .user-name { display: block; font-size: 0.75rem; font-weight: bold; color: var(--primary); margin-bottom: 4px; text-transform: uppercase; }
-        .message-text { color: #334155; line-height: 1.4; word-wrap: break-word; }
-        .btn-delete { position: absolute; top: 5px; right: 10px; color: #cbd5e1; cursor: pointer; border: none; background: none; font-size: 16px; }
-        .btn-delete:hover { color: #ef4444; }
-
-        /* Khu vực nhập liệu */
-        .input-area { padding: 20px; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; }
-        .row { display: flex; gap: 10px; }
-        input { padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        #userName { width: 80px; font-weight: bold; }
-        #noteInput { flex: 1; }
-        .btn-send { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
+        .message-box { background: #f8fafc; padding: 12px 18px; border-radius: 18px; border: 1px solid #e2e8f0; position: relative; animation: fadeIn 0.2s ease; max-width: 80%; align-self: flex-start; }
+        .user-name { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        
+        /* Style cho Audio và Ảnh */
+        .sent-image { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+        audio { max-width: 100%; height: 35px; margin-top: 5px; }
+
+        .btn-delete { position: absolute; top: 5px; right: -25px; color: #cbd5e1; cursor: pointer; border: none; background: none; font-size: 18px; }
+
+        .input-area { padding: 20px; border-top: 1px solid #e2e8f0; background: white; }
+        .row { display: flex; gap: 8px; margin-bottom: 10px; }
+        input { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; outline: none; }
+        #userName { width: 70px; font-weight: bold; }
+        #noteInput { flex: 1; }
+        
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-send { flex: 1; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        
+        .btn-icon { background: #e2e8f0; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        
+        /* Hiệu ứng khi đang ghi âm */
+        .recording { background: var(--record) !important; color: white !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Nhật Ký Trò Chuyện 📝</h2>
+    <h2>Phòng Chat Đa Phương Tiện 🎙️📸</h2>
     <div id="chatDisplay"></div>
     <div class="input-area">
         <div class="row">
             <input type="text" id="userName" placeholder="Tên...">
             <input type="text" id="noteInput" placeholder="Nhập tin nhắn...">
         </div>
-        <button class="btn-send" onclick="App.sendMessage()">GỬI TIN NHẮN</button>
+        <div class="action-buttons">
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="App.handleImage(this)">
+            <button class="btn-icon" onclick="document.getElementById('fileInput').click()">📷</button>
+            
+            <button id="recordBtn" class="btn-icon" onclick="App.toggleRecording()">🎤</button>
+            
+            <button class="btn-send" onclick="App.sendMessage()">GỬI</button>
+        </div>
     </div>
 </div>
 
 <script>
     const App = (() => {
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
         const state = new Proxy({
-            messages: JSON.parse(localStorage.getItem('my_private_chat')) || []
+            messages: JSON.parse(localStorage.getItem('my_chat_ultimate')) || []
         }, {
             set(target, property, value) {
                 target[property] = value;
-                localStorage.setItem('my_private_chat', JSON.stringify(value));
+                try {
+                    localStorage.setItem('my_chat_ultimate', JSON.stringify(value));
+                } catch(e) { alert("Bộ nhớ trình duyệt đã đầy!"); }
                 render();
                 return true;
             }
@@ -62,43 +83,71 @@
             display.innerHTML = state.messages.map((msg, index) => `
                 <div class="message-box">
                     <button class="btn-delete" onclick="App.deleteMessage(${index})">×</button>
-                    <span class="user-name">${sanitize(msg.user)}</span>
-                    <div class="message-text">${sanitize(msg.text)}</div>
+                    <span class="user-name" style="color: #4f46e5">${msg.user}</span>
+                    ${renderContent(msg)}
                 </div>
             `).join('');
             display.scrollTop = display.scrollHeight;
         }
 
-        function sanitize(str) {
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
+        function renderContent(msg) {
+            if (msg.type === 'image') return `<img src="${msg.content}" class="sent-image">`;
+            if (msg.type === 'voice') return `<audio controls src="${msg.content}"></audio>`;
+            return `<div class="message-text">${msg.content}</div>`;
         }
-
-        window.onload = () => {
-            const savedName = localStorage.getItem('chat_user_name');
-            if (savedName) document.getElementById('userName').value = savedName;
-            render();
-        };
 
         return {
             sendMessage() {
-                const nameInp = document.getElementById('userName');
                 const textInp = document.getElementById('noteInput');
-                const user = nameInp.value.trim() || "Ẩn danh";
-                const text = textInp.value.trim();
-
-                if (!text) return;
-
-                localStorage.setItem('chat_user_name', user);
-
-                state.messages = [...state.messages, { user, text }];
-
+                const user = document.getElementById('userName').value || "Ẩn danh";
+                if (!textInp.value.trim()) return;
+                state.messages = [...state.messages, { user, content: textInp.value, type: 'text' }];
                 textInp.value = '';
-                textInp.focus();
             },
+
+            async toggleRecording() {
+                const btn = document.getElementById('recordBtn');
+                if (!isRecording) {
+                    // Bắt đầu ghi âm
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => {
+                            const user = document.getElementById('userName').value || "Ẩn danh";
+                            state.messages = [...state.messages, { user, content: reader.result, type: 'voice' }];
+                        };
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.classList.add('recording');
+                    btn.innerText = "⏹️";
+                } else {
+                    // Dừng và gửi
+                    mediaRecorder.stop();
+                    isRecording = false;
+                    btn.classList.remove('recording');
+                    btn.innerText = "🎤";
+                }
+            },
+
+            handleImage(input) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const user = document.getElementById('userName').value || "Ẩn danh";
+                    state.messages = [...state.messages, { user, content: e.target.result, type: 'image' }];
+                };
+                reader.readAsDataURL(input.files[0]);
+            },
+
             deleteMessage(index) {
-                if (confirm("Xóa tin nhắn này?")) {
+                if(confirm("Xóa mục này?")) {
                     const newMsgs = [...state.messages];
                     newMsgs.splice(index, 1);
                     state.messages = newMsgs;
@@ -106,11 +155,22 @@
             }
         };
     })();
-
-    document.getElementById('noteInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') App.sendMessage();
-    });
+    
+    window.onload = () => {
+        const savedName = localStorage.getItem('chat_user_name');
+        if (savedName) document.getElementById('userName').value = savedName;
+        // Cần gọi render lần đầu
+        const display = document.getElementById('chatDisplay');
+        display.innerHTML = (JSON.parse(localStorage.getItem('my_chat_ultimate')) || []).map((msg, index) => `
+                <div class="message-box">
+                    <button class="btn-delete" onclick="App.deleteMessage(${index})">×</button>
+                    <span class="user-name" style="color: #4f46e5">${msg.user}</span>
+                    ${msg.type === 'image' ? `<img src="${msg.content}" class="sent-image">` : 
+                      msg.type === 'voice' ? `<audio controls src="${msg.content}"></audio>` : 
+                      `<div class="message-text">${msg.content}</div>`}
+                </div>
+            `).join('');
+    };
 </script>
-
 </body>
 </html>
