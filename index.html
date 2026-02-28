@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Messenger Pro của Hùng</title>
+    <title>Messenger Pro Max - Full Features</title>
     <style>
         :root {
             --primary: #0084ff;
@@ -13,193 +13,181 @@
         }
 
         html, body {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-            background-color: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
+            height: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: var(--bg);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
         .hidden { display: none !important; }
 
         .chat-app {
-            display: flex;
-            flex-direction: column;
-            height: 100dvh;
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            position: relative;
+            display: flex; flex-direction: column;
+            height: 100dvh; max-width: 600px;
+            margin: 0 auto; background: white;
+            position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
 
         header {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; z-index: 10;
         }
 
         #chatDisplay {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; gap: 15px;
         }
 
-        .msg-row { display: flex; flex-direction: column; width: 100%; }
+        /* TIN NHẮN */
+        .msg-row { display: flex; flex-direction: column; width: 100%; position: relative; }
         .me { align-items: flex-end; }
         .them { align-items: flex-start; }
 
-        .bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.4;
-            max-width: 75%;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            text-align: left;
-        }
+        .bubble-container { position: relative; max-width: 75%; display: flex; flex-direction: column; }
+        .me .bubble-container { align-items: flex-end; }
 
+        .bubble {
+            padding: 10px 15px; border-radius: 18px;
+            font-size: 15px; line-height: 1.4;
+            word-wrap: break-word; white-space: pre-wrap;
+            text-align: left; cursor: pointer;
+            transition: background 0.2s;
+        }
         .me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
         .them .bubble { background: var(--msg-them); color: black; border-bottom-left-radius: 4px; }
 
-        /* Style riêng cho Emoji khổng lồ */
-        .big-emoji {
-            font-size: 45px;
-            line-height: 1;
-            padding: 5px 0;
-            user-select: none;
+        /* THANH REACTION (6 CÁI + DẤU CỘNG) */
+        .reaction-bar {
+            display: none; position: absolute;
+            top: -50px; background: white;
+            border-radius: 25px; padding: 5px 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 100; gap: 8px;
+            animation: popUp 0.2s ease;
+            align-items: center;
         }
-
-        .bottom-bar {
-            padding: 8px 12px;
-            border-top: 1px solid #eee;
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-            background: white;
-            padding-bottom: env(safe-area-inset-bottom, 8px);
+        @keyframes popUp {
+            from { transform: scale(0.5) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
         }
-
-        #msgTextarea {
-            flex: 1;
-            padding: 10px 15px;
-            border-radius: 20px;
-            border: 1px solid #eee;
-            background: #f0f2f5;
-            outline: none;
-            font-size: 15px;
-            max-height: 120px;
-            resize: none;
-        }
-
-        .action-btn { border: none; background: none; cursor: pointer; padding: 6px; display: flex; align-items: center; }
+        .react-item { cursor: pointer; font-size: 22px; transition: transform 0.1s; }
+        .react-item:hover { transform: scale(1.3); }
         
-        /* Modal Cài đặt Emoji */
+        .plus-btn {
+            width: 28px; height: 28px; background: #f0f2f5;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 18px; cursor: pointer;
+            color: #65676b; font-weight: bold; transition: 0.2s;
+        }
+        .plus-btn:hover { background: #e4e6eb; }
+
+        /* BẢNG CHỌN TẤT CẢ EMOJI (TRƯỢT LÊN) */
+        .full-emoji-panel {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 60%; background: white; z-index: 2000;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
+            padding: 20px; display: flex; flex-direction: column;
+            transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .full-emoji-panel.open { transform: translateY(0); }
+        .emoji-scroll {
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 15px; overflow-y: auto; padding: 15px 0;
+            text-align: center;
+        }
+        .emoji-scroll span { font-size: 30px; cursor: pointer; padding: 5px; border-radius: 10px; }
+        .emoji-scroll span:hover { background: #f0f2f5; }
+
+        /* EMOJI BADGE DƯỚI TIN NHẮN */
+        .emoji-badge {
+            position: absolute; bottom: -12px; right: 10px;
+            background: white; border-radius: 12px;
+            padding: 2px 6px; font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #eee; cursor: pointer;
+            z-index: 5; animation: bounce 0.3s ease;
+        }
+        .me .emoji-badge { right: auto; left: 10px; }
+        @keyframes bounce { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* INPUT BAR */
+        .bottom-bar {
+            padding: 8px 12px; border-top: 1px solid #eee;
+            display: flex; align-items: flex-end; gap: 8px;
+            background: white; padding-bottom: env(safe-area-inset-bottom, 8px);
+        }
+        #msgTextarea {
+            flex: 1; padding: 10px 15px; border-radius: 20px;
+            border: 1px solid #eee; background: #f0f2f5;
+            outline: none; font-size: 15px; max-height: 100px; resize: none;
+        }
+        .action-btn { border: none; background: none; cursor: pointer; padding: 6px; display: flex; align-items: center; }
+
+        /* SETTINGS MODAL (BÁNH RĂNG) */
         .settings-modal {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: white;
-            z-index: 100;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: white; z-index: 1500; padding: 20px;
+            display: flex; flex-direction: column;
         }
-
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+        .emoji-grid-settings {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+            overflow-y: auto; margin-top: 20px;
         }
-
-        .emoji-item { font-size: 30px; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
-        .emoji-item:hover { background: #f0f2f5; }
+        .emoji-option { font-size: 30px; cursor: pointer; text-align: center; padding: 10px; border-radius: 10px; }
 
         .media-content { max-width: 250px; border-radius: 12px; margin-top: 5px; }
-        audio { height: 35px; width: 210px; margin-top: 5px; }
-        .recording { color: red; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
+        audio { height: 35px; width: 200px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="screenRegister" class="hidden" style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:white;">
-        <h1 style="color: var(--primary);">Messenger</h1>
+    <div id="screenRegister" class="hidden" style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <h2 style="color: var(--primary);">Messenger</h2>
         <input type="text" id="usernameInp" placeholder="Tên của bạn..." style="padding:15px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; width:250px;">
         <button onclick="register()" style="padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; width:250px; font-weight:bold;">Vào Chat</button>
     </div>
 
     <div id="screenChat" class="chat-app hidden">
         <header>
-            <div>
-                <strong id="headerUsername">...</strong>
-                <div style="font-size: 11px; color: #31a24c">● Đang hoạt động</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="toggleSettings()" class="action-btn" style="font-size: 20px;">⚙️</button>
-                <button onclick="logout()" style="border:none; background:none; color:red; font-size: 13px;">Thoát</button>
+            <div><strong id="headerUsername">...</strong></div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button onclick="toggleSettings()" class="action-btn" style="font-size: 22px;">⚙️</button>
+                <button onclick="logout()" style="border:none; background:none; color:red; font-weight:bold;">Thoát</button>
             </div>
         </header>
 
         <div id="settingsPanel" class="settings-modal hidden">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Chọn biểu tượng nhanh</h3>
-                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 30px;">&times;</button>
+                <h3>Chọn Emoji nhanh (Nút bên phải)</h3>
+                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 35px;">&times;</button>
             </div>
-            <div class="emoji-grid">
-                <div class="emoji-item" onclick="changeQuickEmoji('💙')">💙</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👍')">👍</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('❤️')">❤️</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('😂')">😂</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🔥')">🔥</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('💯')">💯</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🎉')">🎉</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('💩')">💩</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🔥')">🔥</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🥰')">🥰</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👏')">👏</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🤣')">🤣</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🥰')">🥰</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('😎')">😎</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🤩')">🤩</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🥵')">🥵</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🥶')">🥶</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('😱')">😱</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('💀')">💀</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🤡')">🤡</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👻')">👻</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👽')">👽</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🤖')">🤖</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👾')">👾</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('💩')">💩</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('👑')">👑</div>
-            </div>
+            <div class="emoji-grid-settings" id="emojiSelection"></div>
         </div>
 
-        <div id="chatDisplay"></div>
+        <div id="chatDisplay" onclick="closeAllPopups()"></div>
+
+        <div id="fullEmojiPanel" class="full-emoji-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <strong>Thả cảm xúc</strong>
+                <button onclick="closeFullEmoji()" style="border:none; background:none; font-size:28px;">&times;</button>
+            </div>
+            <div class="emoji-scroll" id="fullEmojiList"></div>
+        </div>
 
         <div class="bottom-bar">
-            <button class="action-btn" onclick="document.getElementById('mediaInp').click()">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0084ff"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>
-            </button>
+            <button class="action-btn" onclick="document.getElementById('mediaInp').click()">📷</button>
             <input type="file" id="mediaInp" hidden onchange="sendMedia(this)">
-
-            <button id="micBtn" class="action-btn" onclick="toggleVoice()">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0084ff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-            </button>
+            
+            <button id="micBtn" class="action-btn" onclick="toggleVoice()">🎤</button>
             
             <textarea id="msgTextarea" rows="1" placeholder="Aa" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+            
+            <button id="quickEmojiBtn" class="action-btn" style="font-size: 24px;" onclick="sendQuickEmoji()">💙</button>
             
             <button class="action-btn" onclick="sendText()">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="#0084ff"><path d="M3.4 20.4L22 12L3.4 3.6L3.39 10.27L17 12L3.39 13.72L3.4 20.4Z"/></svg>
             </button>
-
-            <button id="quickEmojiBtn" class="action-btn" style="font-size: 24px;" onclick="sendQuickEmoji()">💙</button>
         </div>
     </div>
 
@@ -208,6 +196,12 @@
     let database = JSON.parse(localStorage.getItem('off_db')) || [];
     let quickEmoji = localStorage.getItem('off_emoji') || '💙';
     let mediaRec; let chunks = [];
+    let activeMsgIndex = null;
+
+    // Danh sách dữ liệu
+    const quickReacts = ['❤️','😆','😮','😢','😠','👍'];
+    const moreEmojis = ['🔥','🥰','🤣','💯','✨','🚀','💀','💩','🤡','👾','👻','👽','👑','💎','🎉','🍺','🎈','🍪','🍄','🍀','🌈','🌙','🪐','🌊','🔥','✅','❌','🛑','⚠️','💤','🥊','⚽','🍕','🍔'];
+    const settingsEmojis = ['💙','👍','❤️','😂','😮','😢','😠','🔥','💯','🎉','✨','🚀','💀','💩','🤣','🥰','🤡','👾','👻','👽'];
 
     function render() {
         if (!account) {
@@ -221,25 +215,81 @@
         document.getElementById('quickEmojiBtn').innerText = quickEmoji;
 
         const display = document.getElementById('chatDisplay');
-        display.innerHTML = database.map(m => {
+        display.innerHTML = database.map((m, index) => {
             const isMe = m.uid === account.uid;
-            let contentHtml = '';
-            let isEmojiOnly = m.type === 'quick_emoji';
-
-            if (m.type === 'text') contentHtml = m.content;
-            else if (m.type === 'quick_emoji') contentHtml = m.content;
-            else if (m.type === 'image') contentHtml = `<img src="${m.content}" class="media-content">`;
-            else if (m.type === 'voice') contentHtml = `<audio src="${m.content}" controls></audio>`;
+            let content = "";
+            if (m.type === 'text' || m.type === 'emoji') content = m.content;
+            else if (m.type === 'image') content = `<img src="${m.content}" class="media-content">`;
+            else if (m.type === 'voice') content = `<audio src="${m.content}" controls></audio>`;
 
             return `
                 <div class="msg-row ${isMe ? 'me' : 'them'}">
-                    <span style="font-size: 11px; color: #65676b; margin-bottom: 2px;">${m.uName}</span>
-                    <div class="${isEmojiOnly ? 'big-emoji' : 'bubble'}">${contentHtml}</div>
+                    <span style="font-size: 10px; color: #888; margin-bottom: 2px;">${m.uName}</span>
+                    <div class="bubble-container">
+                        <div class="bubble" onclick="showReactions(event, ${index})">${content}</div>
+                        
+                        <div id="react-bar-${index}" class="reaction-bar">
+                            ${quickReacts.map(e => `<span class="react-item" onclick="addReaction(${index}, '${e}')">${e}</span>`).join('')}
+                            <div class="plus-btn" onclick="openFullEmoji(event, ${index})">+</div>
+                        </div>
+
+                        ${m.reaction ? `<div class="emoji-badge" onclick="addReaction(${index}, null)">${m.reaction}</div>` : ''}
+                    </div>
                 </div>
             `;
         }).join('');
         display.scrollTop = display.scrollHeight;
     }
+
+    // --- REACTION LOGIC ---
+    function showReactions(e, index) {
+        e.stopPropagation();
+        closeAllPopups();
+        const bar = document.getElementById(`react-bar-${index}`);
+        if(bar) bar.style.display = 'flex';
+    }
+
+    function openFullEmoji(e, index) {
+        e.stopPropagation();
+        activeMsgIndex = index;
+        const panel = document.getElementById('fullEmojiPanel');
+        const list = document.getElementById('fullEmojiList');
+        list.innerHTML = moreEmojis.map(e => `<span onclick="addReaction(${index}, '${e}'); closeFullEmoji();">${e}</span>`).join('');
+        panel.classList.add('open');
+        closeAllPopups(); // Đóng thanh reaction bar nhỏ
+    }
+
+    function closeFullEmoji() {
+        document.getElementById('fullEmojiPanel').classList.remove('open');
+    }
+
+    function addReaction(index, emoji) {
+        database[index].reaction = emoji;
+        saveAndRender();
+    }
+
+    function closeAllPopups() {
+        document.querySelectorAll('.reaction-bar').forEach(b => b.style.display = 'none');
+        // Không đóng FullEmoji ở đây để tránh xung đột khi click dấu cộng
+    }
+
+    // --- SETTINGS LOGIC ---
+    function toggleSettings() {
+        const panel = document.getElementById('settingsPanel');
+        panel.classList.toggle('hidden');
+        const grid = document.getElementById('emojiSelection');
+        grid.innerHTML = settingsEmojis.map(e => `<div class="emoji-option" onclick="setQuickEmoji('${e}')">${e}</div>`).join('');
+    }
+
+    function setQuickEmoji(e) {
+        quickEmoji = e;
+        localStorage.setItem('off_emoji', e);
+        toggleSettings();
+        render();
+    }
+
+    // --- CORE CHAT LOGIC ---
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
     function handleKeyDown(e) {
         if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
@@ -247,26 +297,24 @@
         }
     }
 
-    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-
     function sendText() {
         const inp = document.getElementById('msgTextarea');
-        if (!inp.value.trim()) return;
-        saveMsg(inp.value, 'text');
-        inp.value = ''; inp.style.height = 'auto';
+        if(inp.value.trim()) { saveMsg(inp.value, 'text'); inp.value = ''; inp.style.height = 'auto'; }
     }
 
-    function sendQuickEmoji() { saveMsg(quickEmoji, 'quick_emoji'); }
+    function sendQuickEmoji() { saveMsg(quickEmoji, 'emoji'); }
 
-    function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); }
+    function saveMsg(content, type) {
+        database.push({ uid: account.uid, uName: account.name, content, type, reaction: null });
+        saveAndRender();
+    }
 
-    function changeQuickEmoji(emoji) {
-        quickEmoji = emoji;
-        localStorage.setItem('off_emoji', emoji);
-        toggleSettings();
+    function saveAndRender() {
+        localStorage.setItem('off_db', JSON.stringify(database));
         render();
     }
 
+    // --- MEDIA LOGIC ---
     function sendMedia(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -277,37 +325,42 @@
     async function toggleVoice() {
         const btn = document.getElementById('micBtn');
         if (!mediaRec) {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRec = new MediaRecorder(stream);
-            chunks = [];
-            mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = () => {
-                const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
-                const r = new FileReader();
-                r.onload = e => saveMsg(e.target.result, 'voice');
-                r.readAsDataURL(blob);
-            };
-            mediaRec.start(); btn.classList.add('recording');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRec = new MediaRecorder(stream);
+                chunks = [];
+                mediaRec.ondataavailable = e => chunks.push(e.data);
+                mediaRec.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/mp3' });
+                    const r = new FileReader();
+                    r.onload = e => saveMsg(e.target.result, 'voice');
+                    r.readAsDataURL(blob);
+                };
+                mediaRec.start(); btn.style.color = 'red';
+            } catch(e) { alert("Mic lỗi!"); }
         } else {
-            mediaRec.stop(); mediaRec = null; btn.classList.remove('recording');
+            mediaRec.stop(); mediaRec = null; btn.style.color = '';
         }
     }
 
-    function saveMsg(content, type) {
-        database.push({ uid: account.uid, uName: account.name, content, type });
-        localStorage.setItem('off_db', JSON.stringify(database));
-        render();
-    }
-
+    // --- AUTH LOGIC ---
     function register() {
         const name = document.getElementById('usernameInp').value;
         if (!name) return;
-        account = { uid: "ID" + Date.now(), name };
+        account = { uid: "U" + Date.now(), name };
         localStorage.setItem('off_acc', JSON.stringify(account));
         render();
     }
 
     function logout() { localStorage.removeItem('off_acc'); location.reload(); }
+
+    // Click ra ngoài đóng bảng Emoji (nhưng không đóng nếu click vào vùng chọn emoji)
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.full-emoji-panel') && !e.target.closest('.plus-btn') && !e.target.closest('.bubble')) {
+            closeFullEmoji();
+            closeAllPopups();
+        }
+    });
 
     render();
 </script>
