@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Messenger Pro Offline</title>
     <style>
         :root {
@@ -12,97 +12,73 @@
             --msg-them: #e4e6eb;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--bg);
+        /* Fix lỗi hiển thị trên di động */
+        html, body {
+            height: 100%;
             margin: 0;
-            display: flex;
-            justify-content: center;
-            height: 100vh;
+            padding: 0;
             overflow: hidden;
+            background-color: var(--bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .hidden { display: none !important; }
 
+        /* Màn hình đăng ký */
         .register-screen {
-            align-self: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 350px;
-        }
-
-        .register-screen input {
-            width: 100%;
-            padding: 15px;
-            margin: 20px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 20px;
             box-sizing: border-box;
         }
 
-        .btn-start {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
+        /* App chính sử dụng Flexbox để luôn hiện thanh nhập liệu */
         .chat-app {
-            width: 100%;
-            max-width: 600px;
-            background: white;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            height: 100dvh; /* Dynamic viewport height cho di động */
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
             position: relative;
         }
 
         header {
-            padding: 15px 20px;
+            padding: 10px 15px;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         #chatDisplay {
             flex: 1;
-            padding: 20px;
             overflow-y: auto;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            background-color: #ffffff;
+            gap: 12px;
+            background-color: white;
         }
 
-        /* KHUNG CHỨA TIN NHẮN */
+        /* FIX CANH LỀ: Sử dụng margin-left: auto thay vì align-items */
         .msg-row {
             display: flex;
             flex-direction: column;
             width: 100%;
+            max-width: 100%;
         }
 
-        /* CĂN LỀ PHẢI CHO MÌNH, TRÁI CHO HỌ */
+        .user-label { font-size: 11px; color: #65676b; margin-bottom: 2px; }
+
         .me { align-items: flex-end; }
         .them { align-items: flex-start; }
 
-        .user-label { 
-            font-size: 11px; 
-            color: #65676b; 
-            margin-bottom: 3px;
-        }
-
-        /* PHẦN QUAN TRỌNG NHẤT ĐỂ FIX LỖI CỦA BẠN */
         .bubble {
             padding: 10px 15px;
             border-radius: 18px;
@@ -111,11 +87,7 @@
             max-width: 75%;
             word-wrap: break-word;
             white-space: pre-wrap;
-            /* Luôn canh trái nội dung chữ */
-            text-align: left; 
-            /* Để bong bóng co giãn theo nội dung nhưng không bị đẩy lùi dòng */
-            display: inline-block;
-            width: auto;
+            text-align: left; /* Cố định luôn luôn canh trái nội dung */
         }
 
         .me .bubble {
@@ -132,28 +104,20 @@
 
         .quick-emoji-sent {
             font-size: 45px;
-            line-height: 1;
             padding: 5px 0;
             user-select: none;
         }
 
-        .media-content { 
-            max-width: 250px; 
-            border-radius: 12px; 
-            margin-top: 5px; 
-            border: 1px solid #eee; 
-            display: block;
-        }
-
-        audio { height: 35px; margin-top: 5px; }
-
+        /* Thanh nhập liệu cố định ở đáy */
         .bottom-bar {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-top: 1px solid #eee;
             display: flex;
             align-items: flex-end;
             gap: 8px;
             background: white;
+            flex-shrink: 0;
+            padding-bottom: env(safe-area-inset-bottom, 8px); /* Cho iPhone X trở lên */
         }
 
         #msgTextarea {
@@ -164,31 +128,30 @@
             background-color: #f0f2f5;
             outline: none;
             font-size: 15px;
-            font-family: inherit;
+            max-height: 100px;
             resize: none;
-            max-height: 120px;
-            line-height: 20px;
             overflow-y: auto;
+            font-family: inherit;
         }
 
         .action-btn {
             border: none;
             background: none;
             cursor: pointer;
-            padding: 5px;
+            padding: 6px;
             display: flex;
             align-items: center;
-            justify-content: center;
         }
 
+        /* Modal cài đặt */
         .settings-modal {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.98);
+            background: white;
             z-index: 100;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            padding: 20px;
         }
 
         .emoji-grid {
@@ -198,69 +161,56 @@
             margin-top: 20px;
         }
 
-        .emoji-item {
-            font-size: 30px;
-            cursor: pointer;
-            text-align: center;
-            padding: 10px;
-        }
+        .emoji-item { font-size: 30px; cursor: pointer; text-align: center; padding: 10px; }
     </style>
 </head>
 <body>
 
     <div id="screenRegister" class="register-screen">
-        <h1 style="color: var(--primary); margin-top: 0;">Messenger</h1>
-        <input type="text" id="usernameInp" placeholder="Tên của bạn...">
-        <button class="btn-start" onclick="register()">Vào Chat</button>
+        <h2 style="color: var(--primary);">Messenger</h2>
+        <input type="text" id="usernameInp" placeholder="Tên của bạn..." style="width: 250px; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+        <button onclick="register()" style="width: 250px; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold;">Vào Chat</button>
     </div>
 
     <div id="screenChat" class="chat-app hidden">
         <header>
             <div>
-                <strong id="headerUsername" style="font-size: 18px;">...</strong>
-                <div style="font-size: 11px; color: #31a24c">● Đang hoạt động</div>
+                <strong id="headerUsername">...</strong>
+                <div style="font-size: 10px; color: #31a24c">● Đang hoạt động</div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="toggleSettings()" style="border:none; background:none; cursor:pointer; font-size: 20px;">⚙️</button>
-                <button onclick="logout()" style="border:none; background:none; color:#f02849; cursor:pointer; font-weight:bold;">Đăng xuất</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 20px;">⚙️</button>
+                <button onclick="logout()" style="border:none; background:none; color:red; font-size: 12px;">Đăng xuất</button>
             </div>
         </header>
 
         <div id="settingsPanel" class="settings-modal hidden">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Cài đặt biểu tượng nhanh</h3>
-                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 30px; cursor:pointer;">&times;</button>
+                <h3>Chọn biểu tượng nhanh</h3>
+                <button onclick="toggleSettings()" style="border:none; background:none; font-size: 30px;">&times;</button>
             </div>
             <div class="emoji-grid">
                 <div class="emoji-item" onclick="changeQuickEmoji('💙')">💙</div>
                 <div class="emoji-item" onclick="changeQuickEmoji('👍')">👍</div>
                 <div class="emoji-item" onclick="changeQuickEmoji('❤️')">❤️</div>
                 <div class="emoji-item" onclick="changeQuickEmoji('😂')">😂</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('😮')">😮</div>
                 <div class="emoji-item" onclick="changeQuickEmoji('🔥')">🔥</div>
                 <div class="emoji-item" onclick="changeQuickEmoji('💯')">💯</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('✔️')">✔️</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('🎉')">🎉</div>
-                <div class="emoji-item" onclick="changeQuickEmoji('💩')">💩</div>
             </div>
         </div>
 
         <div id="chatDisplay"></div>
 
         <div class="bottom-bar">
-            <input type="file" id="mediaInp" hidden accept="image/*,video/*" onchange="sendMedia(this)">
             <button class="action-btn" onclick="document.getElementById('mediaInp').click()">
-                <svg viewBox="0 0 24 24" fill="#0084ff" width="24" height="24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0084ff"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>
             </button>
+            <input type="file" id="mediaInp" hidden onchange="sendMedia(this)">
 
-            <button id="micBtn" class="action-btn" onclick="toggleVoice()">
-                <svg viewBox="0 0 24 24" fill="#0084ff" width="24" height="24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-            </button>
-            
             <textarea id="msgTextarea" rows="1" placeholder="Aa" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
             
             <button class="action-btn" onclick="sendText()">
-                <svg viewBox="0 0 24 24" fill="#0084ff" width="24" height="24"><path d="M3.4 20.4L22 12L3.4 3.6L3.39 10.27L17 12L3.39 13.72L3.4 20.4Z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0084ff"><path d="M3.4 20.4L22 12L3.4 3.6L3.39 10.27L17 12L3.39 13.72L3.4 20.4Z"/></svg>
             </button>
 
             <button id="quickEmojiBtn" class="action-btn" style="font-size: 24px;" onclick="sendQuickEmoji()">💙</button>
@@ -273,149 +223,79 @@
     let quickEmoji = localStorage.getItem('off_emoji') || '💙';
 
     function render() {
-        const screenReg = document.getElementById('screenRegister');
-        const screenChat = document.getElementById('screenChat');
-        const display = document.getElementById('chatDisplay');
-        const qBtn = document.getElementById('quickEmojiBtn');
-
         if (!account) {
-            screenReg.classList.remove('hidden');
-            screenChat.classList.add('hidden');
+            document.getElementById('screenRegister').classList.remove('hidden');
+            document.getElementById('screenChat').classList.add('hidden');
             return;
         }
-
-        screenReg.classList.add('hidden');
-        screenChat.classList.remove('hidden');
+        document.getElementById('screenRegister').classList.add('hidden');
+        document.getElementById('screenChat').classList.remove('hidden');
         document.getElementById('headerUsername').innerText = account.name;
-        qBtn.innerText = quickEmoji;
+        document.getElementById('quickEmojiBtn').innerText = quickEmoji;
 
-        display.innerHTML = database.map((m) => {
+        const display = document.getElementById('chatDisplay');
+        display.innerHTML = database.map(m => {
             const isMe = m.uid === account.uid;
-            const isQuickEmoji = m.type === 'quick_emoji';
-            
-            let contentHtml = '';
-            if (m.type === 'text' || m.type === 'quick_emoji') {
-                contentHtml = m.content;
-            } else if (m.type === 'image') {
-                contentHtml = `<img src="${m.content}" class="media-content">`;
-            } else if (m.type === 'video') {
-                contentHtml = `<video src="${m.content}" controls class="media-content"></video>`;
-            } else if (m.type === 'voice') {
-                contentHtml = `<audio src="${m.content}" controls></audio>`;
-            }
-
+            const content = (m.type === 'text' || m.type === 'emoji') ? m.content : `<img src="${m.content}" style="max-width:200px; border-radius:10px;">`;
             return `
                 <div class="msg-row ${isMe ? 'me' : 'them'}">
                     <span class="user-label">${m.uName}</span>
-                    <div class="${isQuickEmoji ? 'quick-emoji-sent' : 'bubble'}">${contentHtml}</div>
+                    <div class="${m.type === 'emoji' ? 'quick-emoji-sent' : 'bubble'}">${content}</div>
                 </div>
             `;
         }).join('');
-
         display.scrollTop = display.scrollHeight;
     }
 
-    function toggleSettings() {
-        document.getElementById('settingsPanel').classList.toggle('hidden');
-    }
-
-    function changeQuickEmoji(emoji) {
-        quickEmoji = emoji;
-        localStorage.setItem('off_emoji', emoji);
-        document.getElementById('quickEmojiBtn').innerText = emoji;
-        toggleSettings();
-    }
-
     function handleKeyDown(e) {
-        if (e.key === "Enter") {
-            // Trên máy tính (màn hình rộng), Enter là gửi, Shift + Enter là xuống dòng
-            if (window.innerWidth > 768) {
-                if (!e.shiftKey) {
-                    e.preventDefault();
-                    sendText();
-                }
-            }
-            // Trên điện thoại, Enter (phím xuống dòng) sẽ hoạt động bình thường
+        if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
+            e.preventDefault();
+            sendText();
         }
     }
 
     function autoResize(el) {
         el.style.height = 'auto';
-        el.style.height = (el.scrollHeight) + 'px';
+        el.style.height = el.scrollHeight + 'px';
     }
 
-    function saveMessage(content, type) {
-        const msg = { uid: account.uid, uName: account.name, content: content, type: type };
-        database.push(msg);
+    function sendText() {
+        const inp = document.getElementById('msgTextarea');
+        if (!inp.value.trim()) return;
+        saveMsg(inp.value, 'text');
+        inp.value = '';
+        inp.style.height = 'auto';
+    }
+
+    function sendQuickEmoji() { saveMsg(quickEmoji, 'emoji'); }
+
+    function saveMsg(content, type) {
+        database.push({ uid: account.uid, uName: account.name, content, type });
         localStorage.setItem('off_db', JSON.stringify(database));
         render();
     }
 
-    function sendText() {
-        const input = document.getElementById('msgTextarea');
-        const val = input.value.trim();
-        if (val === "") return;
-        saveMessage(val, 'text');
-        input.value = "";
-        input.style.height = 'auto';
-        input.focus();
-    }
+    function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); }
 
-    function sendQuickEmoji() {
-        saveMessage(quickEmoji, 'quick_emoji');
-    }
-
-    function sendMedia(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const isVideo = file.type.startsWith('video/');
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            saveMessage(e.target.result, isVideo ? 'video' : 'image');
-            input.value = "";
-        };
-        reader.readAsDataURL(file);
-    }
-
-    let rec; let audioChunks = [];
-    async function toggleVoice() {
-        const btn = document.getElementById('micBtn');
-        if (!rec) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                rec = new MediaRecorder(stream);
-                audioChunks = [];
-                rec.ondataavailable = e => audioChunks.push(e.data);
-                rec.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const r = new FileReader();
-                    r.onload = e => saveMessage(e.target.result, 'voice');
-                    r.readAsDataURL(blob);
-                };
-                rec.start();
-                btn.classList.add('recording');
-            } catch(e) { alert("Mic lỗi!"); }
-        } else {
-            rec.stop(); rec = null;
-            btn.classList.remove('recording');
-        }
+    function changeQuickEmoji(emoji) {
+        quickEmoji = emoji;
+        localStorage.setItem('off_emoji', emoji);
+        toggleSettings();
+        render();
     }
 
     function register() {
-        const input = document.getElementById('usernameInp');
-        const val = input.value.trim();
-        if (val === "") return alert("Nhập tên!");
-        account = { uid: "U" + Date.now(), name: val };
+        const name = document.getElementById('usernameInp').value;
+        if (!name) return;
+        account = { uid: Date.now(), name };
         localStorage.setItem('off_acc', JSON.stringify(account));
         render();
     }
 
     function logout() {
-        if (confirm("Thoát?")) {
-            account = null;
-            localStorage.removeItem('off_acc');
-            render();
-        }
+        localStorage.removeItem('off_acc');
+        account = null;
+        render();
     }
 
     render();
