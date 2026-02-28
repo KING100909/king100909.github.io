@@ -3,174 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng Chat Đa Phương Tiện Pro</title>
+    <title>Messenger Offline Pro - Fixed</title>
     <style>
-        :root { --primary: #4f46e5; --bg: #f1f5f9; --record: #ef4444; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
-        h2 { background: var(--primary); color: white; margin: 0; padding: 20px; text-align: center; font-size: 1.2rem; }
-        
-        #chatDisplay { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #ffffff; }
-        
-        .message-box { background: #f8fafc; padding: 12px 18px; border-radius: 18px; border: 1px solid #e2e8f0; position: relative; animation: fadeIn 0.2s ease; max-width: 80%; align-self: flex-start; }
-        .user-name { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        
-        /* Style cho Audio và Ảnh */
-        .sent-image { max-width: 100%; border-radius: 10px; margin-top: 5px; }
-        audio { max-width: 100%; height: 35px; margin-top: 5px; }
+        :root { --primary: #0084ff; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; height: 100vh; }
+        .hidden { display: none !important; }
 
-        .btn-delete { position: absolute; top: 5px; right: -25px; color: #cbd5e1; cursor: pointer; border: none; background: none; font-size: 18px; }
+        /* Màn hình đăng ký */
+        .auth-box { align-self: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        .auth-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-start { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .input-area { padding: 20px; border-top: 1px solid #e2e8f0; background: white; }
-        .row { display: flex; gap: 8px; margin-bottom: 10px; }
-        input { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; outline: none; }
-        #userName { width: 70px; font-weight: bold; }
-        #noteInput { flex: 1; }
+        /* Giao diện chính */
+        .chat-container { width: 100%; max-width: 500px; background: white; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         
-        .action-buttons { display: flex; gap: 8px; }
-        .btn-send { flex: 1; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        
-        .btn-icon { background: #e2e8f0; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        
-        /* Hiệu ứng khi đang ghi âm */
-        .recording { background: var(--record) !important; color: white !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        #chatDisplay { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+
+        /* Bong bóng chat */
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; }
+        .msg-wrapper.mine { align-self: flex-end; align-items: flex-end; }
+        .msg-wrapper.others { align-self: flex-start; align-items: flex-start; }
+        .sender-name { font-size: 11px; color: #65676b; margin-bottom: 2px; }
+        .msg-bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; position: relative; }
+        .mine .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .others .msg-bubble { background: #e4e6eb; color: black; border-bottom-left-radius: 4px; }
+
+        .msg-img { max-width: 200px; border-radius: 10px; margin-top: 5px; }
+        audio { height: 35px; width: 210px; margin-top: 5px; }
+
+        /* Nút xóa */
+        .btn-del { cursor: pointer; color: #ccc; font-size: 12px; margin-top: 2px; border: none; background: none; }
+        .btn-del:hover { color: #ff4d4d; }
+
+        /* Thanh nhập liệu */
+        .input-area { padding: 15px; border-top: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        #msgInp { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #eee; background: #f0f2f5; outline: none; }
+        .btn-icon { font-size: 22px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-icon:hover { transform: scale(1.1); }
+        .recording { color: red; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Phòng Chat Đa Phương Tiện 🎙️📸</h2>
-    <div id="chatDisplay"></div>
-    <div class="input-area">
-        <div class="row">
-            <input type="text" id="userName" placeholder="Tên...">
-            <input type="text" id="noteInput" placeholder="Nhập tin nhắn...">
-        </div>
-        <div class="action-buttons">
-            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="App.handleImage(this)">
-            <button class="btn-icon" onclick="document.getElementById('fileInput').click()">📷</button>
+    <div id="authScreen" class="auth-box hidden">
+        <h2 style="color: var(--primary)">Chào mừng!</h2>
+        <input type="text" id="regName" placeholder="Nhập tên của bạn...">
+        <button class="btn-start" onclick="App.register()">Vào Chat</button>
+    </div>
+
+    <div id="chatScreen" class="chat-container hidden">
+        <header>
+            <div>
+                <strong id="headerName">...</strong>
+                <div style="font-size: 10px; color: #31a24c">● Đang hoạt động</div>
+            </div>
+            <button onclick="App.logout()" style="border:none; background:none; color:#999; cursor:pointer;">Đăng xuất</button>
+        </header>
+
+        <div id="chatDisplay"></div>
+
+        <div class="input-area">
+            <input type="file" id="fileInp" hidden accept="image/*" onchange="App.sendImage(this)">
+            <button class="btn-icon" onclick="document.getElementById('fileInp').click()">🖼️</button>
+            <button id="recordBtn" class="btn-icon" onclick="App.toggleRecord()">🎤</button>
             
-            <button id="recordBtn" class="btn-icon" onclick="App.toggleRecording()">🎤</button>
+            <input type="text" id="msgInp" placeholder="Aa" onkeypress="if(event.key === 'Enter') App.sendMessage()">
             
-            <button class="btn-send" onclick="App.sendMessage()">GỬI</button>
+            <button class="btn-icon" onclick="App.sendMessage()" title="Gửi">💙</button>
         </div>
     </div>
-</div>
 
 <script>
     const App = (() => {
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-
+        // Khởi tạo dữ liệu
         const state = new Proxy({
-            messages: JSON.parse(localStorage.getItem('my_chat_ultimate')) || []
+            currentUser: JSON.parse(localStorage.getItem('chat_acc_v3')) || null,
+            messages: JSON.parse(localStorage.getItem('chat_db_v3')) || []
         }, {
-            set(target, property, value) {
-                target[property] = value;
-                try {
-                    localStorage.setItem('my_chat_ultimate', JSON.stringify(value));
-                } catch(e) { alert("Bộ nhớ trình duyệt đã đầy!"); }
+            set(target, prop, value) {
+                target[prop] = value;
+                localStorage.setItem('chat_acc_v3', JSON.stringify(target.currentUser));
+                localStorage.setItem('chat_db_v3', JSON.stringify(target.messages));
                 render();
                 return true;
             }
         });
 
+        let mediaRec;
+        let chunks = [];
+
         function render() {
+            const auth = document.getElementById('authScreen');
+            const chat = document.getElementById('chatScreen');
+            
+            if (!state.currentUser) {
+                auth.classList.remove('hidden');
+                chat.classList.add('hidden');
+                return;
+            }
+
+            auth.classList.add('hidden');
+            chat.classList.remove('hidden');
+            document.getElementById('headerName').innerText = state.currentUser.name;
+
             const display = document.getElementById('chatDisplay');
-            display.innerHTML = state.messages.map((msg, index) => `
-                <div class="message-box">
-                    <button class="btn-delete" onclick="App.deleteMessage(${index})">×</button>
-                    <span class="user-name" style="color: #4f46e5">${msg.user}</span>
-                    ${renderContent(msg)}
+            display.innerHTML = state.messages.map((m, index) => `
+                <div class="msg-wrapper ${m.uid === state.currentUser.uid ? 'mine' : 'others'}">
+                    <span class="sender-name">${m.userName}</span>
+                    <div class="msg-bubble">
+                        ${m.type === 'text' ? m.content : 
+                          m.type === 'image' ? `<img src="${m.content}" class="msg-img">` :
+                          `<audio src="${m.content}" controls></audio>`}
+                    </div>
+                    <button class="btn-del" onclick="App.deleteMessage(${index})">Xóa</button>
                 </div>
             `).join('');
             display.scrollTop = display.scrollHeight;
         }
 
-        function renderContent(msg) {
-            if (msg.type === 'image') return `<img src="${msg.content}" class="sent-image">`;
-            if (msg.type === 'voice') return `<audio controls src="${msg.content}"></audio>`;
-            return `<div class="message-text">${msg.content}</div>`;
-        }
-
         return {
-            sendMessage() {
-                const textInp = document.getElementById('noteInput');
-                const user = document.getElementById('userName').value || "Ẩn danh";
-                if (!textInp.value.trim()) return;
-                state.messages = [...state.messages, { user, content: textInp.value, type: 'text' }];
-                textInp.value = '';
+            register() {
+                const name = document.getElementById('regName').value.trim();
+                if (!name) return alert("Vui lòng nhập tên!");
+                state.currentUser = { uid: Date.now().toString(), name: name };
             },
+            logout() {
+                if(confirm("Bạn có muốn đăng xuất không?")) state.currentUser = null;
+            },
+            // Đảm bảo hàm này trùng tên với lệnh gọi ở nút Trái tim
+            sendMessage() {
+                const inp = document.getElementById('msgInp');
+                const val = inp.value.trim();
+                if (!val) return;
 
-            async toggleRecording() {
+                state.messages = [...state.messages, {
+                    uid: state.currentUser.uid,
+                    userName: state.currentUser.name,
+                    content: val,
+                    type: 'text'
+                }];
+                inp.value = '';
+                inp.focus();
+            },
+            sendImage(inp) {
+                const file = inp.files[0];
+                if (!file) return;
+                const r = new FileReader();
+                r.onload = e => {
+                    state.messages = [...state.messages, {
+                        uid: state.currentUser.uid,
+                        userName: state.currentUser.name,
+                        content: e.target.result,
+                        type: 'image'
+                    }];
+                    inp.value = '';
+                };
+                r.readAsDataURL(file);
+            },
+            async toggleRecord() {
                 const btn = document.getElementById('recordBtn');
-                if (!isRecording) {
-                    // Bắt đầu ghi âm
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-                    
-                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                    mediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                        const reader = new FileReader();
-                        reader.readAsDataURL(audioBlob);
-                        reader.onloadend = () => {
-                            const user = document.getElementById('userName').value || "Ẩn danh";
-                            state.messages = [...state.messages, { user, content: reader.result, type: 'voice' }];
+                if (!mediaRec) {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRec = new MediaRecorder(stream);
+                        chunks = [];
+                        mediaRec.ondataavailable = e => chunks.push(e.data);
+                        mediaRec.onstop = () => {
+                            const blob = new Blob(chunks, { type: 'audio/webm' });
+                            const r = new FileReader();
+                            r.onload = e => {
+                                state.messages = [...state.messages, {
+                                    uid: state.currentUser.uid,
+                                    userName: state.currentUser.name,
+                                    content: e.target.result,
+                                    type: 'voice'
+                                }];
+                            };
+                            r.readAsDataURL(blob);
                         };
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    btn.classList.add('recording');
-                    btn.innerText = "⏹️";
+                        mediaRec.start();
+                        btn.classList.add('recording');
+                    } catch (err) { alert("Không thể truy cập Microphone!"); }
                 } else {
-                    // Dừng và gửi
-                    mediaRecorder.stop();
-                    isRecording = false;
+                    mediaRec.stop();
+                    mediaRec = null;
                     btn.classList.remove('recording');
-                    btn.innerText = "🎤";
                 }
             },
-
-            handleImage(input) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const user = document.getElementById('userName').value || "Ẩn danh";
-                    state.messages = [...state.messages, { user, content: e.target.result, type: 'image' }];
-                };
-                reader.readAsDataURL(input.files[0]);
-            },
-
             deleteMessage(index) {
-                if(confirm("Xóa mục này?")) {
+                if(confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) {
                     const newMsgs = [...state.messages];
                     newMsgs.splice(index, 1);
                     state.messages = newMsgs;
                 }
-            }
+            },
+            init: render
         };
     })();
-    
-    window.onload = () => {
-        const savedName = localStorage.getItem('chat_user_name');
-        if (savedName) document.getElementById('userName').value = savedName;
-        // Cần gọi render lần đầu
-        const display = document.getElementById('chatDisplay');
-        display.innerHTML = (JSON.parse(localStorage.getItem('my_chat_ultimate')) || []).map((msg, index) => `
-                <div class="message-box">
-                    <button class="btn-delete" onclick="App.deleteMessage(${index})">×</button>
-                    <span class="user-name" style="color: #4f46e5">${msg.user}</span>
-                    ${msg.type === 'image' ? `<img src="${msg.content}" class="sent-image">` : 
-                      msg.type === 'voice' ? `<audio controls src="${msg.content}"></audio>` : 
-                      `<div class="message-text">${msg.content}</div>`}
-                </div>
-            `).join('');
-    };
+
+    App.init();
 </script>
 </body>
 </html>
